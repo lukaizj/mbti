@@ -11,16 +11,21 @@
 
 ## 一眼看懂 16 型
 
-内向型 · 深度、结构、内驱
+<p align="center">
+  <img src="docs/personas-introvert.png" width="320" alt="内向型八人格 · 深度、结构、内驱" /><br/>
+  <sub>内向型 · 深度、结构、内驱</sub>
+</p>
 
-![MBTI 内向型八人格](docs/personas-introvert.png)
+<p align="center">
+  <img src="docs/personas-extrovert.png" width="320" alt="外向型八人格 · 连接、节奏、外放" /><br/>
+  <sub>外向型 · 连接、节奏、外放</sub>
+</p>
 
-外向型 · 连接、节奏、外放
-
-![MBTI 外向型八人格](docs/personas-extrovert.png)
-
-> 海报图位于 `docs/`，GitHub 上可直接预览：  
-> [内向型](https://github.com/lukaizj/mbti/blob/main/docs/personas-introvert.png) · [外向型](https://github.com/lukaizj/mbti/blob/main/docs/personas-extrovert.png)
+<p align="center">
+  <a href="docs/personas-introvert.png">查看大图 · 内向</a>
+  ·
+  <a href="docs/personas-extrovert.png">查看大图 · 外向</a>
+</p>
 
 ---
 
