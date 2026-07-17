@@ -1,8 +1,12 @@
 interface:
   display_name: MBTI
   short_description: >-
-    MBTI 16-type persona work modes for agent tone and behavior. Use when the user
-    specifies a type, asks for persona/work mode, or wants personality-driven collaboration.
+    MBTI 16-type persona work modes for agent tone and behavior. Explicit activation offers
+    a short collaboration-preference quiz, manual selection, or skip; personas remain switchable.
   default_prompt: >-
-    Activate mbti skill. Ask for MBTI type if not given, then load
-    references/personas/{TYPE}.md and behavior-contract.md before starting the task.
+    Activate the mbti skill only for an explicit /mbti, persona, or work-mode request. If no
+    type is supplied, show the test / manual choice / skip selection card before beginning the
+    substantive task. Test the user's collaboration preferences, default-enable the resulting
+    recommendation, and state that it can be changed or exited at any time. Read
+    references/behavior-contract.md and the selected persona contract before working; task
+    adapters define mandatory engineering steps and take priority over persona behavior.

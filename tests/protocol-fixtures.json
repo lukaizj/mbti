@@ -1,0 +1,65 @@
+{
+  "valid_types": ["ISTJ", "ISFJ", "INFJ", "INTJ", "ISTP", "ISFP", "INFP", "INTP", "ESTP", "ESFP", "ENFP", "ENTP", "ESTJ", "ESFJ", "ENFJ", "ENTJ"],
+  "quiz": {
+    "all_answers": ["I", "N", "T", "J"],
+    "expected_type": "INTJ",
+    "partial_answers": ["E", "skip", "F", "P"],
+    "expected_type_when_partial": null
+  },
+  "blend": {
+    "valid": "INTJ+ENFP",
+    "invalid_too_many": "INTJ+ENFP+ISTP",
+    "invalid_member": "INTJ+XXXX"
+  },
+  "state_transitions": [
+    {
+      "name": "explicit type overrides project default",
+      "project_default": "INTJ",
+      "input": "ENFP",
+      "expected_behavior_type": "ENFP",
+      "expected_source": "explicit"
+    },
+    {
+      "name": "quiz default-enables complete recommendation",
+      "quiz_answers": ["I", "N", "T", "J"],
+      "expected_behavior_type": "INTJ",
+      "expected_source": "quiz"
+    },
+    {
+      "name": "skip does not use project default",
+      "project_default": "INTJ",
+      "input": "--skip",
+      "expected_behavior_type": null,
+      "expected_explicit_off": false
+    },
+    {
+      "name": "exit clears state and suppresses project default",
+      "initial_behavior_type": "INTJ",
+      "input": "退出人格模式",
+      "expected_behavior_type": null,
+      "expected_task_adapter": null,
+      "expected_explicit_off": true
+    },
+    {
+      "name": "single switch clears blend",
+      "initial_blend": "INTJ+ENFP",
+      "input": "切换人格 ISTP",
+      "expected_behavior_type": "ISTP",
+      "expected_tone_type": "ISTP"
+    }
+  ],
+  "task_inference": {
+    "写测试": "coding",
+    "重构登录模块": "coding",
+    "规划认证迁移": "planning",
+    "UI 微交互": "ui",
+    "线上报错": "debug",
+    "review 这个 diff": "review"
+  },
+  "required_rules": {
+    "debug_order": "复现 → 缩小范围 → 假设 → 验证 → fix",
+    "review_order": "正确性 → 安全 → 可维护 → 风格",
+    "prototype_gate": "prototype 必须明确标注为未完成",
+    "exit_suppression": "explicit_off=true"
+  }
+}

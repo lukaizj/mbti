@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate mbti persona library."""
+"""Validate the MBTI persona library and generated-document consistency."""
 
 from __future__ import annotations
 
@@ -7,29 +7,15 @@ import re
 import sys
 from pathlib import Path
 
+from generate_personas import PERSONAS, render
+
 ROOT = Path(__file__).resolve().parent.parent
 PERSONAS_DIR = ROOT / "references" / "personas"
+README = ROOT / "README.md"
 
-REQUIRED_CODES = frozenset(
-    {
-        "ISTJ",
-        "ISFJ",
-        "INFJ",
-        "INTJ",
-        "ISTP",
-        "ISFP",
-        "INFP",
-        "INTP",
-        "ESTP",
-        "ESFP",
-        "ENFP",
-        "ENTP",
-        "ESTJ",
-        "ESFJ",
-        "ENFJ",
-        "ENTJ",
-    }
-)
+CANONICAL_PERSONAS = {persona["code"]: persona for persona in PERSONAS}
+REQUIRED_CODES = frozenset(CANONICAL_PERSONAS)
+VALID_GROUPS = frozenset({"NT", "NF", "SJ", "SP"})
 
 REQUIRED_FRONTMATTER_KEYS = frozenset(
     {
@@ -55,20 +41,17 @@ REQUIRED_SECTIONS = [
 ]
 
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
-KV_RE = re.compile(r"^([a-z_]+):\s*(.+)$", re.MULTILINE)
 
 
 def parse_frontmatter(text: str) -> dict[str, str]:
     match = FRONTMATTER_RE.match(text)
     if not match:
         return {}
-    block = match.group(1)
+
     data: dict[str, str] = {}
-    for line in block.splitlines():
+    for line in match.group(1).splitlines():
         line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if ":" not in line:
+        if not line or line.startswith("#") or ":" not in line:
             continue
         key, _, value = line.partition(":")
         data[key.strip()] = value.strip().strip('"').strip("'")
@@ -78,17 +61,36 @@ def parse_frontmatter(text: str) -> dict[str, str]:
 def validate_file(path: Path) -> list[str]:
     errors: list[str] = []
     text = path.read_text(encoding="utf-8")
-    fm = parse_frontmatter(text)
+    frontmatter = parse_frontmatter(text)
 
     for key in REQUIRED_FRONTMATTER_KEYS:
-        if key not in fm:
+        if key not in frontmatter:
             errors.append(f"{path.name}: missing frontmatter key '{key}'")
 
-    code = fm.get("code", path.stem)
+    code = frontmatter.get("code", path.stem)
     if code != path.stem:
         errors.append(f"{path.name}: code '{code}' != filename stem '{path.stem}'")
     if code not in REQUIRED_CODES:
         errors.append(f"{path.name}: invalid code '{code}'")
+        return errors
+
+    expected = CANONICAL_PERSONAS[code]
+    if frontmatter.get("group") not in VALID_GROUPS:
+        errors.append(f"{path.name}: invalid group '{frontmatter.get('group')}'")
+    elif frontmatter.get("group") != expected["group"]:
+        errors.append(
+            f"{path.name}: group '{frontmatter.get('group')}' != canonical '{expected['group']}'"
+        )
+
+    for label_key in ("label_zh", "label_en"):
+        if frontmatter.get(label_key) != expected[label_key]:
+            errors.append(
+                f"{path.name}: {label_key} '{frontmatter.get(label_key)}' "
+                f"!= canonical '{expected[label_key]}'"
+            )
+
+    if text != render(expected):
+        errors.append(f"{path.name}: differs from scripts/generate_personas.py")
 
     for section in REQUIRED_SECTIONS:
         if section not in text:
@@ -96,10 +98,25 @@ def validate_file(path: Path) -> list[str]:
 
     if "## 语气契约" in text and "**禁止**" not in text:
         errors.append(f"{path.name}: 语气契约 should include **禁止**")
-
     if "## 工作行为契约" in text and "**默认顺序**" not in text:
         errors.append(f"{path.name}: 工作行为契约 should include **默认顺序**")
 
+    return errors
+
+
+def validate_readme() -> list[str]:
+    if not README.exists():
+        return ["README.md: missing"]
+
+    text = README.read_text(encoding="utf-8")
+    if "## 16 型速查" not in text:
+        return []
+
+    errors: list[str] = []
+    for code, persona in CANONICAL_PERSONAS.items():
+        expected_row = f"| {code} | {persona['label_zh']} |"
+        if expected_row not in text:
+            errors.append(f"README.md: missing canonical row '{expected_row}'")
     return errors
 
 
@@ -109,7 +126,7 @@ def main() -> int:
         return 1
 
     files = sorted(PERSONAS_DIR.glob("*.md"))
-    found = {p.stem for p in files}
+    found = {path.stem for path in files}
     errors: list[str] = []
 
     missing = REQUIRED_CODES - found
@@ -121,14 +138,15 @@ def main() -> int:
 
     for path in files:
         errors.extend(validate_file(path))
+    errors.extend(validate_readme())
 
     if errors:
         print("VALIDATION FAILED:")
-        for err in errors:
-            print(f"  - {err}")
+        for error in errors:
+            print(f"  - {error}")
         return 1
 
-    print(f"OK: {len(files)} persona files validated.")
+    print(f"OK: {len(files)} persona files and README labels validated.")
     return 0
 
 

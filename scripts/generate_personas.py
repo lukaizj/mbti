@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -474,13 +475,40 @@ risk_posture: {p['risk_posture']}
 """
 
 
-def main() -> None:
+def check() -> int:
+    errors: list[str] = []
+    for persona in PERSONAS:
+        path = OUT / f"{persona['code']}.md"
+        expected = render(persona)
+        if not path.exists():
+            errors.append(f"missing generated file: {path.name}")
+        elif path.read_text(encoding="utf-8") != expected:
+            errors.append(f"generated file drifted: {path.name}")
+
+    if errors:
+        print("GENERATION CHECK FAILED:")
+        for error in errors:
+            print(f"  - {error}")
+        return 1
+
+    print(f"OK: {len(PERSONAS)} generated persona files are current.")
+    return 0
+
+
+def main() -> int:
+    if sys.argv[1:] == ["--check"]:
+        return check()
+    if len(sys.argv) > 1:
+        print("usage: generate_personas.py [--check]", file=sys.stderr)
+        return 2
+
     OUT.mkdir(parents=True, exist_ok=True)
-    for p in PERSONAS:
-        path = OUT / f"{p['code']}.md"
-        path.write_text(render(p), encoding="utf-8")
+    for persona in PERSONAS:
+        path = OUT / f"{persona['code']}.md"
+        path.write_text(render(persona), encoding="utf-8")
         print(f"wrote {path.name}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
