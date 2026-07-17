@@ -7,6 +7,19 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+<p align="center">
+  <img src="docs/personas-introvert.png" width="280" alt="内向型八人格" />
+  &nbsp;&nbsp;
+  <img src="docs/personas-extrovert.png" width="280" alt="外向型八人格" />
+</p>
+
+<p align="center">
+  <sub>左：内向型 · 深度、结构、内驱　｜　右：外向型 · 连接、节奏、外放</sub><br/>
+  <a href="docs/personas-introvert.png">查看大图 · 内向</a>
+  ·
+  <a href="docs/personas-extrovert.png">查看大图 · 外向</a>
+</p>
+
 ## 亮点
 
 - **先选再干活**：`/mbti` 首次启用时，4 题快速测试你的协作偏好，推荐结果自动生效。
